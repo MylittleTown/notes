@@ -8,7 +8,7 @@
 
    目前，我们常用的消息队列是Kafka，计算引擎一开始采用的是Spark Streaming，随着Flink 在流计算引擎的优势越来越明显，我们最终确定了Flink 作为网易云音乐实时计算平台的统一的实时计算引擎。
 
-   ![image-20201201094313951](C:\Users\92486\AppData\Roaming\Typora\typora-user-images\image-20201201094313951.png)
+   ![流平台通用框架](https://raw.githubusercontent.com/MylittleTown/notes/master/Linked_pictures/%E7%AC%94%E8%AE%B05-%E6%B5%81%E5%B9%B3%E5%8F%B0%E9%80%9A%E7%94%A8%E6%A1%86%E6%9E%B6.png)
 
    流数据（事件流，数据流）：流数据可以看成是一组组离散事件集合体，由成千上万个数据源，源源不断的持续生成，生成的数据流以log （非传统意义上的系统日志）方式传送。例如我们金融行业中，用户对哪款基金进行了查看，明细点击了几次，现货期货的下单事件，网购支付事件等。
 
@@ -60,7 +60,7 @@
 
    基于Kafka 和Flink 的在消息中间件以及流式计算方面的耀眼表现，产生了围绕Kafka 及Flink 为基础的流计算平台体系，如下图所示：基于APP，web等方式将实时产生的日志采集到Kafka，然后交由Flink 来进行常见的ETL，全局聚合以及Window 聚合等实时计算。
 
-   ![image-20201201113010511](C:\Users\92486\AppData\Roaming\Typora\typora-user-images\image-20201201113010511.png)
+   ![Kafka+Flink流计算体系](https://raw.githubusercontent.com/MylittleTown/notes/master/Linked_pictures/%E7%AC%94%E8%AE%B05-Kafka%2BFlink%E6%B5%81%E8%AE%A1%E7%AE%97%E4%BD%93%E7%B3%BB.png)
 
 5. 网易云音乐使用Kafka 的现状
 
@@ -86,7 +86,7 @@
 
    一开始想到把大的Topic 进行实时分发来解决上面的问题，基于Flink 1.5设计了如下图所示的数据分发的程序，也就是实时数仓的雏形。基于这种大的Topic 分发成小的Topic 的方法，大大减轻了集群的压力，提升了性能，另外，最初使用的是静态的分发规则，后期需要添加规则的时候要进行任务的重启，对业务影响比较大，之后考虑了使用动态规则来完成数据分发的任务。
 
-   ![image-20201202144216719](C:\Users\92486\AppData\Roaming\Typora\typora-user-images\image-20201202144216719.png)
+   ![Flink实现数据分发](https://raw.githubusercontent.com/MylittleTown/notes/master/Linked_pictures/%E7%AC%94%E8%AE%B05-Flink%E5%AE%9E%E7%8E%B0%E6%95%B0%E6%8D%AE%E5%88%86%E5%8F%91.png)
 
    解决了平台初期遇到的问题之后，在平台进阶过程中Kafka 又面临新的问题：
 
@@ -97,7 +97,7 @@
 
    针对以上问题，进行了如下图所示的Kafka 集群隔离和数据分层处理。其过程简单来说，将集群分成DS 集群，日志采集集群，分发集群，数据通过分发服务分发到Flink 进行处理，然后数据清洗进入到DW 集群，同时在DW 写的过程中会同步到镜像集群，在这个过程中也会利用Flink 进行实时计算的统计和拼接，并将生成的ADS 数据写入在线ADS 集群和统计ADS 集群。通过上面的过程，确保了对实时计算要求比较高的任务不会受到统计报表的影响（通过镜像服务将计算和DW 写的过程分开，做到同步）。
 
-   ![image-20201202160314467](C:\Users\92486\AppData\Roaming\Typora\typora-user-images\image-20201202160314467.png)
+   ![Kafka集群隔离和数据分层](https://raw.githubusercontent.com/MylittleTown/notes/master/Linked_pictures/%E7%AC%94%E8%AE%B05-Kafka%E9%9B%86%E7%BE%A4%E9%9A%94%E7%A6%BB%E5%92%8C%E6%95%B0%E6%8D%AE%E5%88%86%E5%B1%82.png)
 
    通过上面的过程确保了对实时计算要求比较高的任务不会受到统计报表的影响。但是分发了不同的集群以后就不可避免的面临新的问题：
 
